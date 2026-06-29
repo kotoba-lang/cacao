@@ -1,5 +1,7 @@
 # cacao-clj
 
+[![CI](https://github.com/kotoba-lang/cacao/actions/workflows/ci.yml/badge.svg)](https://github.com/kotoba-lang/cacao/actions/workflows/ci.yml)
+
 **CAIP-122 / SIWE (EIP-4361) CACAO mint + verify in pure Clojure.** A CACAO is a
 self-sovereign, signed, expiring capability — a SIWE plaintext carrying an issuer
 DID, an audience, a nonce/expiry and a `resources` grant, serialized as CBOR
