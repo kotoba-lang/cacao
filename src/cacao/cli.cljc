@@ -1,4 +1,9 @@
-;; kotoba.cli — identity-primitives CLI (DID / CACAO / seed).
+;; cacao.cli — identity-primitives CLI (DID / CACAO / seed).
+;;
+;; RENAMED from kotoba.cli: that ns name collided with kotoba-lang/kotoba-lang's
+;; canonical kotoba.cli (contract dispatch) — any project depending on both got
+;; alphabetical-classpath shadowing (cacao src sorts first, silently hiding
+;; cli/dispatch). Identity CLI belongs under cacao's own prefix.
 ;;
 ;; A tiny, self-sovereign command surface over the kotoba identity stack:
 ;;
@@ -15,7 +20,7 @@
 ;; and ed25519.core derives the public key in pure Clojure, so nothing here needs a
 ;; native crypto dep. We DERIVE the issuer DID from the seed and NEVER print the seed
 ;; except from the `seed` command (whose whole job is to emit it, with a stderr warning).
-(ns kotoba.cli
+(ns cacao.cli
   (:require [clojure.string :as str]
             #?@(:clj [[ed25519.core :as ed]
                       [cacao.core :as cacao]]))

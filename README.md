@@ -75,7 +75,7 @@ babashka-friendly.
 ## `kotoba` CLI — DID / CACAO / seed
 
 A tiny babashka CLI (`bin/kotoba`, or `bb kotoba …`) over the identity stack.
-Pure argument handling lives in `src/kotoba/cli.cljc` (portable `.cljc`); all
+Pure argument handling lives in `src/cacao/cli.cljc` (portable `.cljc`); all
 crypto + IO (SecureRandom, base64, `java.time` instants, and the `ed25519` /
 `cacao` requires) sits behind `#?(:clj …)`. Runs on bb — JCA Ed25519 sign/verify
 work there, and `ed25519.core` derives the public key in pure Clojure.
@@ -109,7 +109,7 @@ random. `bin/kotoba help` prints full usage.
 rejection, SIWE plaintext shape, header shape, plus the delegation-chain suite
 (real minted 2- and 3-link chains, tampered middle link, resource escalation,
 expiry ordering, broken iss/aud linkage, `:now` freshness, malformed input),
-plus the `kotoba.cli` suite (arg parsing, validation, deterministic seed→did,
+plus the `cacao.cli` suite (arg parsing, validation, deterministic seed→did,
 mint→verify round-trip, ttl/nonce defaults) → 21 tests / 115 assertions green.
 
 ## License

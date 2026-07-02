@@ -1,6 +1,6 @@
-(ns kotoba.cli-test
+(ns cacao.cli-test
   (:require [clojure.test :refer [deftest is testing]]
-            [kotoba.cli :as cli]
+            [cacao.cli :as cli]
             [ed25519.core :as ed]
             [cacao.core :as cacao])
   (:import (java.util Base64)
