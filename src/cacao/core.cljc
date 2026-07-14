@@ -25,14 +25,26 @@
 ;;   (def store (cacao/fresh-nonce-store))
 ;;   (cacao/verify cacao-b64 {:nonce-store store})  ;=> {:valid? true ...}
 ;;   (cacao/verify cacao-b64 {:nonce-store store})  ;=> {:valid? false ...} (replay)
+;;
+;; PORTABLE (.cljc): :clj unchanged; :cljs targets Node (nbb / cljs.main
+;; --target node) on top of ed25519.core's own :cljs branch (synchronous
+;; node:crypto) and cbor.core's Uint8Array convention — base64 goes through
+;; js/Buffer, everything else here was already pure data + string logic.
 (ns cacao.core
   (:require [clojure.string :as str]
             [ed25519.core :as ed]
             [cbor.core :as cbor])
-  (:import (java.util Base64)))
+  #?(:clj (:import (java.util Base64))))
 
-(defn- b64 ^String [^bytes b] (.encodeToString (Base64/getEncoder) b))
-(defn- unb64 ^bytes [^String s] (.decode (Base64/getDecoder) s))
+(defn- b64 ^String [b]
+  #?(:clj (.encodeToString (Base64/getEncoder) ^bytes b)
+     :cljs (.toString (js/Buffer.from b) "base64")))
+(defn- unb64 [^String s]
+  #?(:clj (.decode (Base64/getDecoder) s)
+     :cljs (js/Uint8Array. (js/Buffer.from s "base64"))))
+(defn- utf8-bytes [^String s]
+  #?(:clj (.getBytes s "UTF-8")
+     :cljs (.encode (js/TextEncoder.) s)))
 
 (defn siwe-message
   "The EIP-4361 plaintext that gets signed. `iss` must be a did:key (the address
@@ -69,7 +81,7 @@
         msg (siwe-message {:iss iss :aud aud :iat iat :exp exp :nonce nonce
                            :domain domain :version version :statement statement
                            :resources resources})
-        sig-b64 (b64 (ed/sign seed (.getBytes msg "UTF-8")))
+        sig-b64 (b64 (ed/sign seed (utf8-bytes msg)))
         cacao (cbor/encode
                (cbor/ordered
                 [["h" (cbor/ordered [["t" "eip4361"]])]
@@ -136,7 +148,7 @@
   (check-and-record! [store replay-key]))
 
 (extend-protocol NonceStore
-  clojure.lang.Atom
+  #?(:clj clojure.lang.Atom :cljs cljs.core/Atom)
   (check-and-record! [store replay-key]
     ;; swap-vals! is a single atomic operation: the returned `old` is
     ;; guaranteed to be the pre-swap value actually observed by THIS swap,
@@ -200,7 +212,7 @@
            payload {:iss iss :aud (get p "aud") :iat (get p "iat") :exp (get p "exp")
                     :nonce (get p "nonce") :domain (get p "domain")
                     :version (get p "version") :resources (get p "resources")}
-           sig-valid? (ed/verify-did iss (.getBytes (siwe-message payload) "UTF-8") sig)
+           sig-valid? (ed/verify-did iss (utf8-bytes (siwe-message payload)) sig)
            temporal-valid? (temporal-ok? payload now)]
        (if (and sig-valid? temporal-valid?)
          (let [nonce (:nonce payload)
@@ -211,7 +223,7 @@
                fresh? (or (nil? nonce) (check-and-record! store [iss nonce]))]
            {:valid? fresh? :iss iss :payload payload})
          {:valid? false :iss iss :payload payload}))
-     (catch Exception _ {:valid? false}))))
+     (catch #?(:clj Exception :cljs :default) _ {:valid? false}))))
 
 ;; ── delegation chains ─────────────────────────────────────────────────────────
 
@@ -358,9 +370,9 @@
           :chain/resources (set (:resources leaf))
           :chain/expires (first (sort (keep :exp payloads)))
           :chain/depth (count chain)}))
-     (catch Exception e
+     (catch #?(:clj Exception :cljs :default) e
        {:chain/valid? false
-        :chain/problems [{:problem :chain/error :message (.getMessage e)}]
+        :chain/problems [{:problem :chain/error :message (ex-message e)}]
         :chain/root-iss nil :chain/holder nil :chain/resources #{}
         :chain/expires nil :chain/depth 0}))))
 

@@ -6,7 +6,7 @@
  ;;   gh api repos/kotoba-lang/<repo>/commits/main --jq .sha
  :deps {io.github.kotoba-lang/org-ietf-ed25519
         {:git/url "https://github.com/kotoba-lang/org-ietf-ed25519.git"
-         :git/sha "fdcefb9f1b83461fee54d04b63e374fa301ee847"}
+         :git/sha "e96c4d0390b3f7d7c29f981e17ab666e16dc0fe0"}
         io.github.kotoba-lang/org-ietf-cbor
         {:git/url "https://github.com/kotoba-lang/org-ietf-cbor.git"
          :git/sha "de18ad29102f9df150e214d756de4719c3c00d7a"}}
